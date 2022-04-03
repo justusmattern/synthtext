@@ -28,7 +28,7 @@ def prepare_training_data(args):
     return prompted_texts, num_texts
 
 
-def num_to_generate_by_domain(args, data: dict) -> dict():
+def num_to_generate_by_domain(args, data: dict):
 
     to_generate = dict()
 
@@ -45,7 +45,7 @@ def num_to_generate_by_domain(args, data: dict) -> dict():
 
 def run(args):
 
-    domain_data_dict, all_prompt_texts = prepare_training_data(args)
+    all_prompt_texts, domain_data_dict = prepare_training_data(args)
     write_texts_to_file(all_prompt_texts, dir=args.prompted_data_dir, filename=f'{args.run_name}_training_data.txt')
     train_model(text_path=f'{args.prompted_data_dir}/{args.run_name}_training_data.txt', output_dir=args.model_output_dir, epochs=args.epochs, model_name=args.model, batch_size=args.batch_size)
     to_generate = num_to_generate_by_domain(args, domain_data_dict)
