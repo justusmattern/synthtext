@@ -1,18 +1,23 @@
 from train_model import train_model
+from generate import generate
+from utils import *
 import argparse
 import random
-import os
 
 def prepare_training_data(args):
     data = dict()
     labels = ['toxic', 'neutral']
     prompted_texts = []
 
+    num_texts = dict()
+
     for dom in args.domains:
         data[dom] = dict()
+        num_texts[dom] = dict()
         for lab in labels:
             with open(f'data/civilcomments/train/{dom}_{lab}.txt', 'r') as file:
                 data[dom][lab] = file.readlines()
+                num_texts[dom][lab] = len(data[dom][lab])
 
             for text in data[dom][lab]:
                 train_text = ('<BOS> ' + args.prompt.replace('<DOMAIN>', dom).replace('<LABEL>', lab) + ' ' + text + '<EOS>').replace('\n', ' ')
@@ -20,22 +25,47 @@ def prepare_training_data(args):
 
     random.shuffle(prompted_texts)
 
-    os.makedirs(args.gen_data_dir, exist_ok=True)
-    with open(f'{args.gen_data_dir}/{args.run_name}_training_data.txt', 'w') as f:
-        for text in prompted_texts:
-            f.write(text+'\n')
+    return prompted_texts
+
+
+def num_to_generate_by_domain(args, data: dict) -> dict():
+
+    to_generate = dict()
+
+    for dom in args.domains:
+        to_generate[dom] = dict()
+        label = min(data[dom], key=data[dom].get)
+        difference = abs(data[dom['toxic']] - data[dom]['neutral'])
+        to_generate[dom]['label'] = label
+        to_generate[dom]['num'] = difference
+    
+    return to_generate
+
 
 
 def run(args):
-    prepare_training_data(args)
+
+    domain_data_dict, all_prompt_texts = prepare_training_data(args)
+    write_texts_to_file(all_prompt_texts, dir=args.prompted_data_dir, filename=f'{args.run_name}_training_data.txt')
     train_model(text_path=f'{args.gen_data_dir}/{args.run_name}_training_data.txt', output_dir=args.model_output_dir, epochs=args.epochs, model_name=args.model, batch_size=args.batch_size)
-    generate()
+    to_generate = num_to_generate_by_domain(args, domain_data_dict)
+
+    for dom in args.domains:
+        
+        generate(args.model_output_dir,
+        prompt='<BOS> ' + args.prompt.replace('<DOMAIN>', dom).replace('<LABEL>', to_generate[dom]['label']),
+        num_sequences=to_generate[dom]['num'],
+        gen_data_dir=args.gen_data_dir,
+        gen_data_filename="{}_{}_{}".format(args.run_name, dom, to_generate[dom]['label'])
+        )
+
+
 
 if __name__=='__main__':
 
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('--run_name', type=str)
+    parser.add_argument('--run-name', type=str)
     parser.add_argument('--model', type=str, default='gpt2-xl', help='huggingface model name')
     parser.add_argument('--epochs', type=int, default=3, help='number of finetuning epochs')
     parser.add_argument('--prompt', type='str', default='Write a <LABEL> comment mentioning <DOMAIN> people:')

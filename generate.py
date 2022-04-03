@@ -2,30 +2,43 @@ import torch
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 import os
 import sys
+import argparse
+from utils import *
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"
+def generate(model, tokenizer, prompt, num_sequences, gen_data_dir, gen_data_filename):
 
-tokenizer = GPT2Tokenizer.from_pretrained("gpt2-large")#.to('cuda')
+    tokenizer = GPT2Tokenizer.from_pretrained(tokenizer)
+    model = GPT2LMHeadModel.from_pretrained(model, pad_token_id=tokenizer.eos_token_id)
+    model.parallelize()
 
-# add the EOS token as PAD token to avoid warnings
-model = GPT2LMHeadModel.from_pretrained("model2 train_model.txt", pad_token_id=tokenizer.eos_token_id)#.to('cuda:0')
+    input_ids = tokenizer.encode('<BOS> ' + prompt + ' ', return_tensors='pt')
+    
+    sample_outputs = model.generate(
+        input_ids,
+        do_sample=True, 
+        max_length=200, 
+        top_k=20, 
+        top_p=0.97, 
+        num_return_sequences=num_sequences
+    )
 
-input_ids = tokenizer.encode('<BOS> Write a positive review about a great movie:', return_tensors='pt')#.to('cuda:0')
+    final_samples = []
+    for sample in sample_outputs:
+        final_samples.append(sample.replace('<BOS> ' + prompt + ' ', '').replace('<EOS>', '').replace('\n' ' '))
+    
+    write_texts_to_file(final_samples, dir=gen_data_dir, filename=gen_data_filename)
+    
 
-# set top_k = 50 and set top_p = 0.95 and num_return_sequences = 3
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
 
-sample_outputs = model.generate(
-    input_ids,
-    do_sample=True, 
-    max_length=300, 
-    top_k=20, 
-    top_p=0.97, 
-    num_return_sequences=100
-)
+    parser.add_argument('--model', type=str)
+    parser.add_argument('--tokenizer')
+    parser.add_argument('--prompt', type=str)
+    parser.add_argument('--num-sequences', type=int, default=1)
+    parser.add_argument('--gen-data-dir', type=str, default='generated_data')
+    parser.add_argument('--gen-data-filename')
 
+    args = parser.parse_args()
 
-print("Output:\n" + 100 * '-')
-with open(f'generated_reviews{sys.argv[1]}.txt', 'w') as f:
-    for i, sample_output in enumerate(sample_outputs):
-      f.write("{}: {}".format(i, tokenizer.decode(sample_output, skip_special_tokens=True))+ "\n")
-
+    generate(*args)

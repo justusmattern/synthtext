@@ -14,6 +14,7 @@ def train_model(text_path, output_dir, epochs, model_name, batch_size, cache_dir
     special_tokens_dict = {'bos_token': '<BOS>', 'eos_token': '<EOS>', 'pad_token': '<PAD>'}
     num_added_toks = tokenizer.add_special_tokens(special_tokens_dict)
     model.resize_token_embeddings(len(tokenizer))
+    model.parallelize()
 
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
     train_dataset = TextDataset(
