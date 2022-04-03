@@ -24,7 +24,7 @@ def train_model(text_path, output_dir, epochs, model_name, batch_size, cache_dir
     )
     
     training_args =TrainingArguments(
-    output_dir="trained_model",
+    output_dir=output_dir,
     num_train_epochs=epochs,
     per_device_train_batch_size=batch_size,
     warmup_steps=500,
