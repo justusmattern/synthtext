@@ -51,7 +51,7 @@ def run(args):
     to_generate = num_to_generate_by_domain(args, domain_data_dict)
 
     for dom in args.domains:
-        
+
         generate(args.model_output_dir,
         prompt='<BOS> ' + args.prompt.replace('<DOMAIN>', dom).replace('<LABEL>', to_generate[dom]['label']),
         num_sequences=to_generate[dom]['num'],
@@ -68,7 +68,7 @@ if __name__=='__main__':
     parser.add_argument('--run-name', type=str)
     parser.add_argument('--model', type=str, default='gpt2-xl', help='huggingface model name')
     parser.add_argument('--epochs', type=int, default=3, help='number of finetuning epochs')
-    parser.add_argument('--prompt', type='str', default='Write a <LABEL> comment mentioning <DOMAIN> people:')
+    parser.add_argument('--prompt', type=str, default='Write a <LABEL> comment mentioning <DOMAIN> people:')
     parser.add_argument('--batch-size', type=int, default=1)
     parser.add_argument('--prompted-data-dir', type = str, default='temp')
     parser.add_argument('--gen-data-dir', type=str, default='generated_data')
