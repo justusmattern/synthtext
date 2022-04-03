@@ -25,7 +25,7 @@ def prepare_training_data(args):
 
     random.shuffle(prompted_texts)
 
-    return prompted_texts
+    return prompted_texts, num_texts
 
 
 def num_to_generate_by_domain(args, data: dict) -> dict():
