@@ -28,7 +28,6 @@ class CivilCommentsDataset(torch.utils.data.Dataset):
                         for line in lines:
                             sample = line.split('<BOS>')[0]
                             lab = 1 if l=='toxic' else 0
-                            print('lab', lab)
                             self.texts.append(sample)
                             self.labels.append(lab)
                 except FileNotFoundError as e:
