@@ -1,4 +1,3 @@
-
 import os 
 
 def write_texts_to_file(texts, dir, filename):
