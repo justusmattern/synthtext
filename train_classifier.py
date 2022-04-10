@@ -31,7 +31,7 @@ def run(model_name='distilbert-base-uncased', epochs = 20, save_dir = 'trained_c
         for x, y in train_loader:
             tokenized_input = tokenizer(list(x), return_tensors='pt', padding=True, truncation=True).input_ids
             pred = model(tokenized_input)
-            loss = loss_f(pred, y.long())
+            loss = loss_f(pred.cpu(), y.long())
             loss.backward()
             optimizer.step()
 
@@ -51,7 +51,7 @@ def run(model_name='distilbert-base-uncased', epochs = 20, save_dir = 'trained_c
         for x, y, meta in val_loader:
             tokenized_input = tokenizer(x, return_tensors='pt', padding=True, truncation=True).input_ids
             pred = model(tokenized_input)
-            loss = loss_f(pred, y.long())
+            loss = loss_f(pred.cpu(), y.long())
             _, preds = torch.max(pred, dim=1)
             correct_predictions = torch.sum(preds.cpu() == y.long())
             val_accuracy += correct_predictions/len(y)
@@ -71,7 +71,7 @@ def run(model_name='distilbert-base-uncased', epochs = 20, save_dir = 'trained_c
         for x, y, meta in test_loader:
             tokenized_input = tokenizer(list(x), return_tensors='pt', padding=True, truncation=True).input_ids
             pred = model(tokenized_input)
-            loss = loss_f(pred, y.long())
+            loss = loss_f(pred.cpu(), y.long())
             _, preds = torch.max(pred, dim=1)
             correct_predictions = torch.sum(preds.cpu() == y.long())
             test_accuracy += correct_predictions/len(y)
