@@ -1,0 +1,41 @@
+Sender: LSF System <lsfadmin@eu-g3-045>
+Subject: Job 213010325: <synthdata> in cluster <euler> Exited
+
+Job <synthdata> was submitted from host <eu-login-22> by user <jmattern> in cluster <euler> at Sun Apr 10 16:58:55 2022
+Job was executed on host(s) <20*eu-g3-045>, in queue <gpu.24h>, as user <jmattern> in cluster <euler> at Sun Apr 10 16:59:22 2022
+</cluster/home/jmattern> was used as the home directory.
+</cluster/work/sachan/jmattern/synthtext> was used as the working directory.
+Started at Sun Apr 10 16:59:22 2022
+Terminated at Sun Apr 10 16:59:28 2022
+Results reported at Sun Apr 10 16:59:28 2022
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+python train_classifier.py
+------------------------------------------------------------
+
+Exited with exit code 1.
+
+Resource usage summary:
+
+    CPU time :                                   2.23 sec.
+    Max Memory :                                 372 MB
+    Average Memory :                             288.00 MB
+    Total Requested Memory :                     20480.00 MB
+    Delta Memory :                               20108.00 MB
+    Max Swap :                                   -
+    Max Processes :                              3
+    Max Threads :                                4
+    Run time :                                   6 sec.
+    Turnaround time :                            33 sec.
+
+The output (if any) follows:
+
+Traceback (most recent call last):
+  File "train_classifier.py", line 5, in <module>
+    from civilcomments_dataset import get_training_loader_synthdata
+  File "/cluster/work/sachan/jmattern/synthtext/civilcomments_dataset.py", line 3, in <module>
+    from wilds import get_dataset
+ModuleNotFoundError: No module named 'wilds'

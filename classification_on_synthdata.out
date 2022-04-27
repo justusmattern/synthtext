@@ -1,0 +1,40 @@
+Sender: LSF System <lsfadmin@eu-g3-044>
+Subject: Job 213324342: <synthdata> in cluster <euler> Exited
+
+Job <synthdata> was submitted from host <eu-login-26> by user <jmattern> in cluster <euler> at Tue Apr 12 00:29:55 2022
+Job was executed on host(s) <20*eu-g3-044>, in queue <gpu.24h>, as user <jmattern> in cluster <euler> at Tue Apr 12 00:30:16 2022
+</cluster/home/jmattern> was used as the home directory.
+</cluster/work/sachan/jmattern/synthtext> was used as the working directory.
+Started at Tue Apr 12 00:30:16 2022
+Terminated at Wed Apr 13 00:30:42 2022
+Results reported at Wed Apr 13 00:30:42 2022
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+python train_classifier.py
+------------------------------------------------------------
+
+TERM_RUNLIMIT: job killed after reaching LSF run time limit.
+Exited with exit code 140.
+
+Resource usage summary:
+
+    CPU time :                                   86427.14 sec.
+    Max Memory :                                 6059 MB
+    Average Memory :                             4006.97 MB
+    Total Requested Memory :                     20480.00 MB
+    Delta Memory :                               14421.00 MB
+    Max Swap :                                   -
+    Max Processes :                              3
+    Max Threads :                                9
+    Run time :                                   86425 sec.
+    Turnaround time :                            86447 sec.
+
+The output (if any) follows:
+
+Some weights of the model checkpoint at distilbert-base-uncased were not used when initializing DistilBertModel: ['vocab_transform.bias', 'vocab_projector.bias', 'vocab_layer_norm.bias', 'vocab_projector.weight', 'vocab_transform.weight', 'vocab_layer_norm.weight']
+- This IS expected if you are initializing DistilBertModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing DistilBertModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+User defined signal 2
