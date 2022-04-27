@@ -49,7 +49,7 @@ def run(args):
     write_texts_to_file(all_prompt_texts, dir=args.prompted_data_dir, filename=f'{args.run_name}_training_data.txt')
     train_model(text_path=f'{args.prompted_data_dir}/{args.run_name}_training_data.txt', output_dir=args.model_output_dir, epochs=args.epochs, model_name=args.model, batch_size=args.batch_size)
     to_generate = num_to_generate_by_domain(args, domain_data_dict)
-
+    exit()
     for dom in args.domains:
 
         generate(args.model_output_dir,

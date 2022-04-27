@@ -19,6 +19,8 @@ class CivilCommentsDataset(torch.utils.data.Dataset):
             self.texts.append(x[0])
             self.labels.append(y[0].item())
 
+        print('1 count', self.labels.count(1))
+        print('0 count', self.labels.count(0))
 
         for l in labels:
             for d in domains:

@@ -11,6 +11,7 @@ from wilds import get_dataset
 def run(model_name='distilbert-base-uncased', epochs = 20, save_dir = 'trained_classifiers'):
     tokenizer = DistilBertTokenizer.from_pretrained(model_name)
     model = BertClassifier()
+    model.to('cuda:0')
     train_loader = get_training_loader_synthdata()
     loss_f = nn.CrossEntropyLoss()
     optimizer = Adam(model.parameters(), lr=5e-5)
@@ -28,8 +29,12 @@ def run(model_name='distilbert-base-uncased', epochs = 20, save_dir = 'trained_c
         optimizer.zero_grad()
         
         train_accuracy = 0
+        iter = 0
         for x, y in train_loader:
-            tokenized_input = tokenizer(list(x), return_tensors='pt', padding=True, truncation=True).input_ids
+            if iter % 10 == 0:
+                print(iter)
+            iter += 1
+            tokenized_input = tokenizer(list(x), return_tensors='pt', padding=True, truncation=True).input_ids.to('cuda:0')
             pred = model(tokenized_input)
             loss = loss_f(pred.cpu(), y.long())
             loss.backward()
@@ -49,7 +54,7 @@ def run(model_name='distilbert-base-uncased', epochs = 20, save_dir = 'trained_c
         val_true = []
         val_meta = []
         for x, y, meta in val_loader:
-            tokenized_input = tokenizer(x, return_tensors='pt', padding=True, truncation=True).input_ids
+            tokenized_input = tokenizer(x, return_tensors='pt', padding=True, truncation=True).input_ids.to('cuda:0')
             pred = model(tokenized_input)
             loss = loss_f(pred.cpu(), y.long())
             _, preds = torch.max(pred, dim=1)
@@ -69,7 +74,7 @@ def run(model_name='distilbert-base-uncased', epochs = 20, save_dir = 'trained_c
         test_true = []
         test_meta = []
         for x, y, meta in test_loader:
-            tokenized_input = tokenizer(list(x), return_tensors='pt', padding=True, truncation=True).input_ids
+            tokenized_input = tokenizer(list(x), return_tensors='pt', padding=True, truncation=True).input_ids.to('cuda:0')
             pred = model(tokenized_input)
             loss = loss_f(pred.cpu(), y.long())
             _, preds = torch.max(pred, dim=1)
