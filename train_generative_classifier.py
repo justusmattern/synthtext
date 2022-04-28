@@ -6,7 +6,7 @@ from torch import nn
 from generative_classifier_supervised import CausalClassifier
 from wilds.common.data_loaders import get_eval_loader, get_train_loader
 from wilds import get_dataset
-from sklearn.metrics import accuracy_score, f1_score
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
 def get_data_loaders(training_batch_size, train_ratio, val_ratio, test_ratio):
     dataset = get_dataset(dataset="civilcomments", download=True)
@@ -38,7 +38,37 @@ def meta_to_domain(meta):
     return domain_list
 
 
+def get_domain_indices(domains_list):
+    domain_indices = dict()
+    domain_verbalizers = ['male', 'female', 'LGBTQ', 'christian', 'muslim', 'differently religious', 'black', 'white']
+    for domain in domain_verbalizers:
+        domain_indices[domain] = []
+
+    for domains in domains_list:
+        for dom in domain_verbalizers:
+            if dom in domains:
+                domain_indices[dom].append(True)
+            else:
+                domain_indices[dom].append(False)
+    
+    return domain_indices
+
+
+def domain_evaluation(domain_indices, predictions, labels):
+    domain_verbalizers = ['male', 'female', 'LGBTQ', 'christian', 'muslim', 'differently religious', 'black', 'white']
+
+    for domain in domain_verbalizers:
+        print(f'evaluating for domain {domain}')
+        domain_preds, domain_labels = [p for p, i in zip(predictions, domain_indices[domain]) if i], [l for l, i in zip(labels, domain_indices[domain]) if i]
+        print('precision', precision_score(domain_preds, domain_labels))
+        print('recall', recall_score(domain_preds, domain_labels))
+        print()
+
+
+
+
 def run(args):
+    domain_verbalizers = ['male', 'female', 'LGBTQ', 'christian', 'muslim', 'differently religious', 'black', 'white']
     train_data, train_loader, val_data, val_loader, test_data, test_loader = get_data_loaders(args.batch_size, train_ratio=args.train_set_ratio, val_ratio=args.val_set_ratio, test_ratio=args.test_set_ratio)
     model = CausalClassifier(gpt2_model = args.model, gpt2_tokenizer=args.tokenizer, device_id=args.device_id).to(f'cuda:{args.device_id}')
     optimizer = Adam(model.parameters(), lr=1e-5)
@@ -50,6 +80,11 @@ def run(args):
             all_predictions = []
             all_labels = []
             all_domains = []
+
+            domain_indices = dict()
+            for dom in domain_verbalizers:
+                domain_indices[dom] = []
+
             for x, y, meta in tqdm(train_loader):
                 domains_list = meta_to_domain(meta)
                 loss, label_probs, predictions = model(x, domains_list, y)
@@ -60,18 +95,29 @@ def run(args):
 
                 loss.backward()
                 optimizer.step()
+
+                local_domain_indices = get_domain_indices(domains_list)
+                for dom in domain_verbalizers:
+                    domain_indices[dom].extend(local_domain_indices[dom])
+
             
             print('train results:')
-            print(accuracy_score(all_predictions, all_labels))
-            print(f1_score(all_predictions, all_labels))
+            print('accuracy', accuracy_score(all_predictions, all_labels))
+            print('f1 score', f1_score(all_predictions, all_labels))
+            domain_evaluation(domain_indices, all_predictions, all_labels)
 
-            train_data.eval(torch.LongTensor(all_predictions).cpu(), torch.LongTensor(all_labels).cpu(), torch.stack(all_domains).cpu())
+            #train_data.eval(torch.LongTensor(all_predictions).cpu(), torch.LongTensor(all_labels).cpu(), torch.stack(all_domains).cpu())
             #torch.save(model.state_dict(), f'gpt2_epoch{epoch}.pt')
 
         model.eval()
         all_predictions = []
         all_labels = []
         all_domains = []
+
+        domain_indices = dict()
+        for dom in domain_verbalizers:
+            domain_indices[dom] = []
+
         for x, y, meta in tqdm(val_loader):
             domains_list = meta_to_domain(meta)
             loss, label_probs, predictions = model(x, domains_list, y)
@@ -79,17 +125,27 @@ def run(args):
             all_predictions.extend(predictions.tolist())
             all_labels.extend(y.tolist())
             all_domains.extend([m for m in meta])
+
+            local_domain_indices = get_domain_indices(domains_list)
+            for dom in domain_verbalizers:
+                domain_indices[dom].extend(local_domain_indices[dom])
         
         print('val results:')
         print(accuracy_score(all_predictions, all_labels))
         print(f1_score(all_predictions, all_labels))
+        domain_evaluation(domain_indices, all_predictions, all_labels)
 
-        val_data.eval(torch.LongTensor(all_predictions), torch.LongTensor(all_labels), torch.stack(all_domains))
+        #val_data.eval(torch.LongTensor(all_predictions), torch.LongTensor(all_labels), torch.stack(all_domains))
 
         model.eval()
         all_predictions = []
         all_labels = []
         all_domains = []
+
+        domain_indices = dict()
+        for dom in domain_verbalizers:
+            domain_indices[dom] = []
+
         for x, y, meta in tqdm(test_loader):
             domains_list = meta_to_domain(meta)
             loss, label_probs, predictions = model(x, domains_list, y)
@@ -97,11 +153,16 @@ def run(args):
             all_predictions.extend(predictions.tolist())
             all_labels.extend(y.tolist())
             all_domains.extend([m for m in meta])
+
+            local_domain_indices = get_domain_indices(domains_list)
+            for dom in domain_verbalizers:
+                domain_indices[dom].extend(local_domain_indices[dom])
         
         print('test results:')
         print(accuracy_score(all_predictions, all_labels))
         print(f1_score(all_predictions, all_labels))
-        test_data.eval(torch.LongTensor(all_predictions), torch.LongTensor(all_labels), torch.stack(all_domains))
+        domain_evaluation(domain_indices, all_predictions, all_labels)
+        #test_data.eval(torch.LongTensor(all_predictions), torch.LongTensor(all_labels), torch.stack(all_domains))
 
 
 if __name__=='__main__':
