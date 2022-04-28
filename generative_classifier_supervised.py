@@ -4,12 +4,14 @@ from torch import nn
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
 class CausalClassifier(nn.Module):
-    def __init__(self, gpt2_model='gpt2', prompt="Write a <LABEL> comment mentioning <DOMAIN> people:"):
+    def __init__(self, gpt2_model='gpt2', gpt2_tokenizer = 'gpt2', device_id=0, prompt="Write a <LABEL> comment mentioning <DOMAIN> people:"):
         super(CausalClassifier, self).__init__()
         self.gpt2 = GPT2LMHeadModel.from_pretrained(gpt2_model)
-        self.tokenizer = GPT2Tokenizer.from_pretrained(gpt2_model)
+        self.tokenizer = GPT2Tokenizer.from_pretrained(gpt2_tokenizer)
+        self.tokenizer.pad_token = self.tokenizer.eos_token
         self.prompt = prompt
-        self.loss_fn_lm = nn.CrossEntropyLoss(reduction=None)
+        self.device_id = device_id
+        self.loss_fn_lm = nn.CrossEntropyLoss(reduction='none')
         self.loss_fn_cls = nn.CrossEntropyLoss(reduction='mean')
         
     
@@ -34,8 +36,8 @@ class CausalClassifier(nn.Module):
 
     
     def get_losses(self, prompt_list, whole_text_list):
-        tokenized_all = self.tokenizer(whole_text_list, return_tensors='pt', padding=True, truncation=True).input_ids
-        tokenized_prompt = self.tokenizer(prompt_list, return_tensors='pt', padding=True, truncation=True).input_ids
+        tokenized_all = self.tokenizer(whole_text_list, return_tensors='pt', padding=True, truncation=True, max_length=512).input_ids.to(f'cuda:{self.device_id}')
+        tokenized_prompt = self.tokenizer(prompt_list, return_tensors='pt', padding=True, truncation=True).input_ids.to(f'cuda:{self.device_id}')
 
         language_loss = self.lm_loss(tokenized_all) - self.lm_loss(tokenized_prompt)
         return language_loss
@@ -52,7 +54,7 @@ class CausalClassifier(nn.Module):
         label_probs = torch.softmax(-1* torch.stack(loss_scores).permute(1,0), dim=1)
         cls_loss = self.loss_fn_cls(label_probs.cpu(), labels)
 
-        predictions = torch.argmax(pred, dim=1)
+        predictions = torch.argmax(label_probs.cpu(), dim=1)
         
         return cls_loss, label_probs, predictions
 

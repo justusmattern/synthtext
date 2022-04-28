@@ -1,0 +1,22 @@
+Traceback (most recent call last):
+  File "/home/zjin/users/justus_mattern/code/synthtext/train_generative_classifier.py", line 115, in <module>
+    run(args)
+  File "/home/zjin/users/justus_mattern/code/synthtext/train_generative_classifier.py", line 75, in run
+    loss, label_probs, predictions = model(x, domains_list, y)
+  File "/home/zjin/users/justus_mattern/anaconda3/envs/synthtext/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/zjin/users/justus_mattern/code/synthtext/generative_classifier_supervised.py", line 51, in forward
+    loss_scores = [self.get_losses(prompts_neutral, neutral_whole), self.get_losses(prompts_toxic, toxic_whole)]
+  File "/home/zjin/users/justus_mattern/code/synthtext/generative_classifier_supervised.py", line 41, in get_losses
+    language_loss = self.lm_loss(tokenized_all) - self.lm_loss(tokenized_prompt)
+  File "/home/zjin/users/justus_mattern/code/synthtext/generative_classifier_supervised.py", line 19, in lm_loss
+    loss = self.loss_fn_lm(logits, input)
+  File "/home/zjin/users/justus_mattern/anaconda3/envs/synthtext/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/zjin/users/justus_mattern/anaconda3/envs/synthtext/lib/python3.9/site-packages/torch/nn/modules/loss.py", line 1163, in forward
+    return F.cross_entropy(input, target, weight=self.weight,
+  File "/home/zjin/users/justus_mattern/anaconda3/envs/synthtext/lib/python3.9/site-packages/torch/nn/functional.py", line 2996, in cross_entropy
+    return torch._C._nn.cross_entropy_loss(input, target, weight, _Reduction.get_enum(reduction), ignore_index, label_smoothing)
+  File "/home/zjin/users/justus_mattern/anaconda3/envs/synthtext/lib/python3.9/site-packages/torch/nn/_reduction.py", line 19, in get_enum
+    raise ValueError("{} is not a valid value for reduction".format(reduction))
+ValueError: None is not a valid value for reduction
