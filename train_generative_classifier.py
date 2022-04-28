@@ -2,6 +2,7 @@ from tqdm import tqdm
 import argparse
 import torch
 from torch.optim import Adam
+from torch.optim.lr_scheduler import ExponentialLR
 from torch import nn
 from generative_classifier_supervised import CausalClassifier
 from wilds.common.data_loaders import get_eval_loader, get_train_loader
@@ -78,6 +79,7 @@ def run(args):
     train_data, train_loader, val_data, val_loader, test_data, test_loader = get_data_loaders(args.batch_size, train_ratio=args.train_set_ratio, val_ratio=args.val_set_ratio, test_ratio=args.test_set_ratio)
     model = CausalClassifier(gpt2_model = args.model, gpt2_tokenizer=args.tokenizer, device_id=args.device_id).to(f'cuda:{args.device_id}')
     optimizer = Adam(model.parameters(), lr=args.learning_rate)
+    scheduler = ExponentialLR(optimizer, gamma=0.9)
 
     for epoch in range(args.epochs):
 
@@ -115,7 +117,9 @@ def run(args):
 
             #train_data.eval(torch.LongTensor(all_predictions).cpu(), torch.LongTensor(all_labels).cpu(), torch.stack(all_domains).cpu())
             #torch.save(model.state_dict(), f'gpt2_epoch{epoch}.pt')
-
+        
+        scheduler.step()
+        
         model.eval()
         all_predictions = []
         all_labels = []
