@@ -30,8 +30,13 @@ class CausalClassifier(nn.Module):
         neutral_whole = [f'{prompt} {text}' for prompt, text in zip(prompts_neutral, texts)]
         toxic_whole = [f'{prompt} {text}' for prompt, text in zip(prompts_toxic, texts)]
 
-        neutral_loss = self.gpt2(neutral_whole, labels=neutral_whole).loss - self.gpt2(prompts_neutral, labels=prompts_neutral).loss
-        toxic_loss = self.gpt2(toxic_whole, labels=toxic_whole).loss - self.gpt2(prompts_toxic, labels=prompts_toxic).loss
+        neutral_whole_tokenized = self.tokenizer(neutral_whole, truncation=True, max_length=1024, return_tensors='pt').input_ids
+        toxic_whole_tokenized = self.tokenizer(toxic_whole, truncation=True, max_length=1024, return_tensors='pt').input_ids
+        prompts_neutral_tokenized = self.tokenizer(prompts_neutral, truncation=True, max_length=1024, return_tensors='pt').input_ids
+        prompts_toxic_tokenized = self.tokenizer(prompts_toxic, truncation=True, max_length=1024, return_tensors='pt').input_ids
+
+        neutral_loss = self.gpt2(neutral_whole_tokenized, labels=neutral_whole_tokenized).loss - self.gpt2(prompts_neutral_tokenized, labels=prompts_neutral_tokenized).loss
+        toxic_loss = self.gpt2(toxic_whole_tokenized, labels=toxic_whole_tokenized).loss - self.gpt2(prompts_toxic_tokenized, labels=prompts_toxic_tokenized).loss
 
         loss_scores = [neutral_loss, toxic_loss]
 
