@@ -2,3 +2,4 @@ trained_model
 data
 generated_data
 logs
+distilbert*

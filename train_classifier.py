@@ -42,10 +42,10 @@ def run(model_name='distilbert-base-uncased', epochs = 20, save_dir = 'trained_c
 
             _, preds = torch.max(pred, dim=1)
             correct_predictions = torch.sum(preds.cpu() == y.long())
-            train_accuracy += correct_predictions/len(y)
+            train_accuracy += correct_predictions/len(train_loader)
         
         print('training accuracy', train_accuracy)
-        #torch.save(model.state_dict(), f'{save_dir}/epoch{epoch}.pt')
+        torch.save(model.state_dict(), f'distilbert_epoch{epoch}.pt')
 
         print('val model')
         model.eval()
@@ -59,13 +59,16 @@ def run(model_name='distilbert-base-uncased', epochs = 20, save_dir = 'trained_c
             loss = loss_f(pred.cpu(), y.long())
             _, preds = torch.max(pred, dim=1)
             correct_predictions = torch.sum(preds.cpu() == y.long())
-            val_accuracy += correct_predictions/len(y)
+            val_accuracy += correct_predictions/len(val_loader)
             val_preds.append(preds[0].cpu().item())
             val_true.append(y[0].cpu().item())
-            val_meta.append(meta[0].cpu().item())
+            val_meta.append(meta[0].cpu())
 
         print('validation accuracy', val_accuracy)
-        val_data.eval(val_preds, val_true, val_meta)
+        print(val_preds)
+        print(val_true)
+        print(val_meta)
+        val_data.eval(torch.LongTensor(val_preds), torch.LongTensor(val_true), torch.stack(val_meta))
 
 
         print('test model')
@@ -79,13 +82,13 @@ def run(model_name='distilbert-base-uncased', epochs = 20, save_dir = 'trained_c
             loss = loss_f(pred.cpu(), y.long())
             _, preds = torch.max(pred, dim=1)
             correct_predictions = torch.sum(preds.cpu() == y.long())
-            test_accuracy += correct_predictions/len(y)
+            test_accuracy += correct_predictions/len(test_loader)
             test_preds.append(preds[0].cpu().item())
             test_true.append(y[0].cpu().item())
-            test_meta.append(meta[0].cpu().item())
+            test_meta.append(meta[0].cpu())
 
         print('test accuracy', test_accuracy)
-        test_data.eval(test_preds, test_true, test_meta)
+        test_data.eval(torch.LongTensor(test_preds), torch.LongTensor(test_true), torch.stack(test_meta))
 
 
 
