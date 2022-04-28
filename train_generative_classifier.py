@@ -101,6 +101,7 @@ def run(args):
 
                 loss.backward()
                 optimizer.step()
+                print(loss)
 
                 local_domain_indices = get_domain_indices(domains_list)
                 for dom in domain_verbalizers:

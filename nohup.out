@@ -1,0 +1,8 @@
+usage: train_generative_classifier.py [-h] [--epochs EPOCHS]
+                                      [--batch-size BATCH_SIZE] [--eval-only]
+                                      [--model MODEL] [--tokenizer TOKENIZER]
+                                      [--device-id DEVICE_ID]
+                                      [--train-set-ratio TRAIN_SET_RATIO]
+                                      [--val-set-ratio VAL_SET_RATIO]
+                                      [--test-set-ratio TEST_SET_RATIO]
+train_generative_classifier.py: error: argument --device-id: expected one argument
