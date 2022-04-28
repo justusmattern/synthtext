@@ -59,9 +59,15 @@ def domain_evaluation(domain_indices, predictions, labels):
 
     for domain in domain_verbalizers:
         print(f'evaluating for domain {domain}')
-        domain_preds, domain_labels = [p for p, i in zip(predictions, domain_indices[domain]) if i], [l for l, i in zip(labels, domain_indices[domain]) if i]
-        print('precision', precision_score(domain_preds, domain_labels))
-        print('recall', recall_score(domain_preds, domain_labels))
+
+        domain_preds_toxic = [p for p, i, l in zip(predictions, domain_indices[domain], labels) if i and l==1] 
+        domain_labels_toxic = [1]*len(domain_preds_toxic)
+
+        domain_preds_neutral = [p for p, i, l in zip(predictions, domain_indices[domain], labels) if i and l==1] 
+        domain_labels_neutral = [0]*len(domain_preds_neutral)
+
+        print('accuracy for toxic', accuracy_score(domain_preds_toxic, domain_labels_toxic))
+        print('accuracy for neutral', accuracy_score(domain_preds_neutral, domain_labels_neutral))
         print()
 
 
@@ -71,7 +77,7 @@ def run(args):
     domain_verbalizers = ['male', 'female', 'LGBTQ', 'christian', 'muslim', 'differently religious', 'black', 'white']
     train_data, train_loader, val_data, val_loader, test_data, test_loader = get_data_loaders(args.batch_size, train_ratio=args.train_set_ratio, val_ratio=args.val_set_ratio, test_ratio=args.test_set_ratio)
     model = CausalClassifier(gpt2_model = args.model, gpt2_tokenizer=args.tokenizer, device_id=args.device_id).to(f'cuda:{args.device_id}')
-    optimizer = Adam(model.parameters(), lr=1e-5)
+    optimizer = Adam(model.parameters(), lr=args.learning_rate)
 
     for epoch in range(args.epochs):
 
@@ -178,6 +184,7 @@ if __name__=='__main__':
     parser.add_argument('--train-set-ratio', type=float, default=1.0)
     parser.add_argument('--val-set-ratio', type=float, default=1.0)
     parser.add_argument('--test-set-ratio', type=float, default=1.0)
+    parser.add_argument('--learning-rate', type=float, default=1e-5)
     args = parser.parse_args()
     run(args)
 
