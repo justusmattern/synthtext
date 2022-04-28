@@ -64,9 +64,9 @@ def run(args):
             print('train results:')
             print(accuracy_score(all_predictions, all_labels))
             print(f1_score(all_predictions, all_labels))
-            
-            #train_data.eval(torch.LongTensor(all_predictions), torch.LongTensor(all_labels), torch.stack(all_domains))
-            torch.save(model.state_dict(), f'gpt2_epoch{epoch}.pt')
+
+            train_data.eval(torch.LongTensor(all_predictions).cpu(), torch.LongTensor(all_labels).cpu(), torch.stack(all_domains).cpu())
+            #torch.save(model.state_dict(), f'gpt2_epoch{epoch}.pt')
 
         model.eval()
         all_predictions = []
