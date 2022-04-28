@@ -79,7 +79,7 @@ def run(args):
     train_data, train_loader, val_data, val_loader, test_data, test_loader = get_data_loaders(args.batch_size, train_ratio=args.train_set_ratio, val_ratio=args.val_set_ratio, test_ratio=args.test_set_ratio)
     model = CausalClassifier(gpt2_model = args.model, gpt2_tokenizer=args.tokenizer, device_id=args.device_id).to(f'cuda:{args.device_id}')
     optimizer = Adam(model.parameters(), lr=args.learning_rate)
-    scheduler = ExponentialLR(optimizer, gamma=0.9)
+    scheduler = ExponentialLR(optimizer, gamma=0.92)
 
     for epoch in range(args.epochs):
 
@@ -113,7 +113,7 @@ def run(args):
             print('train results:')
             print('accuracy', accuracy_score(all_predictions, all_labels))
             print('f1 score', f1_score(all_predictions, all_labels))
-            domain_evaluation(domain_indices, all_predictions, all_labels)
+            #domain_evaluation(domain_indices, all_predictions, all_labels)
 
             #train_data.eval(torch.LongTensor(all_predictions).cpu(), torch.LongTensor(all_labels).cpu(), torch.stack(all_domains).cpu())
             #torch.save(model.state_dict(), f'gpt2_epoch{epoch}.pt')
@@ -144,7 +144,7 @@ def run(args):
         print('val results:')
         print(accuracy_score(all_predictions, all_labels))
         print(f1_score(all_predictions, all_labels))
-        domain_evaluation(domain_indices, all_predictions, all_labels)
+        #domain_evaluation(domain_indices, all_predictions, all_labels)
 
         #val_data.eval(torch.LongTensor(all_predictions), torch.LongTensor(all_labels), torch.stack(all_domains))
 
@@ -172,7 +172,7 @@ def run(args):
         print('test results:')
         print(accuracy_score(all_predictions, all_labels))
         print(f1_score(all_predictions, all_labels))
-        domain_evaluation(domain_indices, all_predictions, all_labels)
+        #domain_evaluation(domain_indices, all_predictions, all_labels)
         #test_data.eval(torch.LongTensor(all_predictions), torch.LongTensor(all_labels), torch.stack(all_domains))
 
 

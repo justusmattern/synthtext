@@ -39,8 +39,11 @@ class CausalClassifier(nn.Module):
         tokenized_all = self.tokenizer(whole_text_list, return_tensors='pt', padding=True, truncation=True, max_length=512).input_ids.to(f'cuda:{self.device_id}')
         tokenized_prompt = self.tokenizer(prompt_list, return_tensors='pt', padding=True, truncation=True).input_ids.to(f'cuda:{self.device_id}')
 
-        language_loss = self.lm_loss(tokenized_all) - self.lm_loss(tokenized_prompt)
-        return language_loss
+        language_loss = self.lm_loss(tokenized_all)
+        prompt_loss = self.lm_loss(tokenized_prompt)
+        print('language loss', language_loss)
+        print('prompt_loss', prompt_loss)
+        return language_loss - prompt_loss
 
 
     def forward(self, texts, domains_list, labels):
@@ -48,10 +51,13 @@ class CausalClassifier(nn.Module):
 
         neutral_whole = [f'{prompt} {text}' for prompt, text in zip(prompts_neutral, texts)]
         toxic_whole = [f'{prompt} {text}' for prompt, text in zip(prompts_toxic, texts)]
-
+        print(neutral_whole)
+        print(toxic_whole)
         loss_scores = [self.get_losses(prompts_neutral, neutral_whole), self.get_losses(prompts_toxic, toxic_whole)]
+        print('loss_scores', loss_scores)
 
-        label_probs = torch.softmax(-1* torch.stack(loss_scores).permute(1,0), dim=1)
+        label_probs = torch.softmax(-torch.stack(loss_scores).permute(1,0)/10, dim=1)
+        #print(label_probs)
         cls_loss = self.loss_fn_cls(label_probs.cpu(), labels)
 
         predictions = torch.argmax(label_probs.cpu(), dim=1)
